@@ -6,4 +6,4 @@ if (!process.env.NODE_ENV) {
 
 require ('babel-register');
 require ('babel-polyfill');
-require ('../src');
+require ('../lib');
