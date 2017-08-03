@@ -14,7 +14,6 @@ const outputFilename = './sketchfile.sketch';
 
 const prepare = (outputDir) =>
 	run ([
-		`rm -rf ${outputDir}`,
 		`mkdir ${outputDir}`,
 		`mkdir ${outputDir}/less`,
 		`mkdir ${outputDir}/styles`,
