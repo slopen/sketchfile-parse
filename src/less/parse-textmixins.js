@@ -12,6 +12,12 @@ import {
 const outputDir = './data';
 const globalFontSize = 16;
 
+const accentMap = {
+    'accent-1': 'success',
+    'accent-2': 'warning',
+    'accent-3': 'danger'
+};
+
 const binarizeStyle = (data) =>
     new Promise ((resolve, reject) => {
         const buf = Buffer.from (data, 'base64');
@@ -151,18 +157,13 @@ const colorEmphaseMixins =
 }
 
 .font-color (
+    @type;
+    @emphase;
     @inverse;
     @accent;
 ) {
-    @color: "text-color-@{accent}";
+    @color: "font-@{type}-@{emphase}-@{accent}-@{inverse}-color";
     color: @@color;
-}
-.font-color (
-    @inverse;
-    @accent;
-) when (@inverse = 'inverse') {
-    @color: "text-color-@{accent}-inverse";
-    color:@@color;
 }`;
 
 const buildFontSizeMixin = ({
@@ -186,10 +187,10 @@ const buildTextStyleMixin = ({name}) =>
 ) when (@type = '${name}'){
     .font-${name}();
     .font-style(@emphase);
-    .font-color(@inverse, @accent);
+    .font-color(@type; @emphase; @inverse; @accent);
 }`;
 
-const mergeStyles = (styles) => {
+const mergeToMixins = (styles) => {
     const data = {
         fonts: {
             normal: null,
@@ -243,6 +244,49 @@ const mergeStyles = (styles) => {
     return result;
 }
 
+const mergeToColors = (styles) => {
+    const parseName = (name) => {
+        const nameData = name.split (/-/);
+
+        if (!nameData [0].match (/\d+/)) {
+            return {};
+        }
+
+        const inverse = name.match (/white/);
+        let accent = name.match (
+            /disabled|active|secondary|accent-\d/
+        );
+
+        if (accent && accent [0]) {
+            accent = accentMap [accent [0]] || accent [0];
+        }
+
+        return {
+            name: nameData [1],
+            emphase: nameData [2] == 2 ? 'emphase' : 'normal',
+            inverse: inverse ? 'inverse' : 'normal',
+            accent: accent || 'normal'
+        };
+    }
+
+    return styles
+        .map ((style) => {
+            const {
+                name,
+                emphase,
+                inverse,
+                accent
+            } = parseName (style.name);
+
+            return name
+                ? `\/\/ ${style.name}\n@font-${name}-${emphase}-${accent}-${inverse}-color: ${style.color};\n`
+                : null;
+        })
+        .filter ((text) => text)
+        .sort ((a, b) => a.localeCompare (b))
+        .join ('\n')
+}
+
 const parseTextStyles = async (outputDir) => {
     const styles = [];
 
@@ -263,17 +307,12 @@ const parseTextStyles = async (outputDir) => {
 
     await writeFile (
         outputDir + '/less/text-colors.less',
-        styles
-            .map (({name, color}) =>
-                `@${name}-color: ${color};`
-            )
-            .sort ((a, b) => a.localeCompare (b))
-            .join ('\n')
+        mergeToColors (styles)
     );
 
     await writeFile (
         outputDir + '/less/text-mixins.less',
-        mergeStyles (styles)
+        mergeToMixins (styles)
     );
 }
 

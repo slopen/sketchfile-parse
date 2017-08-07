@@ -22,7 +22,7 @@ const extractPallette = (data) => {
     const {opacity} = contextSettings;
 
     if (opacity) {
-        result.opacity = opacity.toFixed (4);
+        result.opacity = (opacity * 100).toFixed (2);
     }
 
     const {fills = [{}]} = data.value;
