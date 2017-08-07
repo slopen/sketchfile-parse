@@ -7,6 +7,7 @@
   },
   "scripts": {
     "compile": "babel -d lib/ src/",
+    "compile:watch": "babel -d lib/ src/ -w",
     "prepublish": "npm run compile",
     "extract": "./node_modules/.bin/babel-node bin/index.js --extract ./sketchfile.sketch ./data",
     "pack": "./node_modules/.bin/babel-node bin/index.js --pack ./sketchfile.sketch ./data",

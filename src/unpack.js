@@ -18,7 +18,7 @@ const prepare = (outputDir) =>
 		`mkdir ${outputDir}/less`,
 		`mkdir ${outputDir}/styles`,
 		`mkdir ${outputDir}/symbols`
-	].join (' && '));
+	].join ('; '));
 
 
 const unpack = (filename, outputDir) =>
